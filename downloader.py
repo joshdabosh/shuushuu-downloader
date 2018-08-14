@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup as bs
 import os
 import requests
 import json
+import time
 
 def download(info):
     name=info[11:]
@@ -26,7 +27,7 @@ def download(info):
 
 def main():
     datafile, cont, opening, recent = json.loads(open("data.json", "r").read()), False, False, 0
-
+    start = time.time()
     try:
         data = int(datafile["last"])
 
@@ -60,20 +61,28 @@ def main():
                 links = []
                 for x in content.findAll("div", {"class":"image_thread display"}):
                     for y in x.findAll("div", {"class":"image_block"}):
-                        for z in y.findAll("div", {"class":"thumb"}):
-                            for a in z.findAll("a", {"class":"thumb_image"}):
-                                links.append(a["href"].replace("/images/", "").strip())
-
-                for icantthinkofavariablename in links:
-                    download(icantthinkofavariablename)
+                        z = y.find("div", {"class":"thumb"})
+                        a = z.find("a", {"class":"thumb_image"})
+                        links.append(a["href"].replace("/images/", "").strip())
+                        
+                for blah in links:
+                    # blah is now something like 2018-08-14-999999.jpg
+                    download(blah)
                     
             else:
+                print("Error getting page")
                 continue
 
         except:
             print("Error, something went wrong when finding images")
 
+        print("Downloaded page {}".format(page_no))
+
         recent=int(i+1)
+
+        stop = time.time()
+
+        print("time taken: {}".format(int(stop)-int(start)))
 
     f = open("data.json", "w")
     datafile["last"] = int(recent)
