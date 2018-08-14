@@ -89,8 +89,8 @@ def main():
     
     for i in range(pages):
         try:
-            page_no=i+1
-            page=requests.get("http://e-shuushuu.net/?page="+str(page_no+data))
+            page_no=int(i)+1+int(data)
+            page=requests.get("http://e-shuushuu.net/?page="+str(page_no))
             if page:
                 soup=bs(page.content, "html.parser")
 
@@ -116,7 +116,7 @@ def main():
         except:
             print("Error, something went wrong when finding images")
 
-        recent=int(i+1)
+        recent=int(page_no)
 
     for i in range(threads):
         t = threading.Thread(target=download)
