@@ -17,5 +17,4 @@ Images inside the "downloaded" directory will be sorted by date of upload, i.e. 
 
 ---
 
-Note: it is a bit slow at this point, as it iterates through the divs to find the right images. Please give it some time.<br />
 Enjoy! ^^
