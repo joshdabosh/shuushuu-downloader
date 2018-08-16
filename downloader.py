@@ -31,14 +31,6 @@ def download():
         q.task_done()
 
         print("Downloaded {}".format(name))
-
-
-def find_img():
-    while not q2.empty():
-        y = q2.get()
-        z = y.find("div", {"class":"thumb"})
-        a = z.find("a", {"class":"thumb_image"})
-        q.put((a["href"].replace("/images/", "").strip()))
     
 
 def main():
@@ -77,23 +69,18 @@ def main():
         threads = "4"
 
     if not threads.isnumeric():
-        print("Error: {} is not an integer")
+        print("Error: {} is not an integer".format(threads))
         return
 
     else:
         threads = int(threads)
 
-    if threads > os.cpu_count():
-        print("Error, your requested thread count, {}, was too high.")
-        return
-
     if pages <=0:
         print("Error, bad page amount")
         return
     
-    global q, q2, debug
+    global q, debug
     q = Queue()
-    q2 = Queue()
     debug = []
 
     start = time.time()
@@ -107,12 +94,18 @@ def main():
 
                 main=soup.find("div", {"id":"page"})
                 content=main.find("div", {"id":"content"})
-                
+                links = []
                 for x in content.findAll("div", {"class":"image_thread display"}):
                     for y in x.findAll("div", {"class":"image_block"}):
-                        q2.put(y)
+                        z = y.find("div", {"class":"thumb"})
+                        a = z.find("a", {"class":"thumb_image"})
+                        links.append(a["href"].replace("/images/", "").strip())
+                        
+                for blah in links:
+                    q.put(blah)
+                    debug.append(blah)
 
-                print("Processed page {}".format(page_no))
+                print("Retrieved images from page {}".format(page_no))
                     
             else:
                 print("Error getting page")
@@ -123,15 +116,6 @@ def main():
 
         recent=int(page_no)
 
-    for thread in range(threads):
-        t = threading.Thread(target=find_img)
-        t.daemon = True
-        t.start()
-        t.join()
-
-    print("Retrieved all image urls")
-        
-
     for i in range(threads):
         t = threading.Thread(target=download)
         t.daemon = True
@@ -141,7 +125,7 @@ def main():
     print("Downloaded all images")
 
     f = open("data.json", "w")
-    datafile["last"] = int(recent)
+    datafile["last"] = int(recent)+1
     f.write(json.dumps(datafile))
     f.close()
 
